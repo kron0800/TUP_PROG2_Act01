@@ -1,0 +1,6 @@
+bin/
+obj/
+.vs/
+
+# Ignore desktop.ini from Google Drive Sync Config
+desktop.ini
