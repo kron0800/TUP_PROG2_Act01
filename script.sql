@@ -12,8 +12,7 @@ CREATE TABLE FormaPago (
 CREATE TABLE Articulo (
     id_articulo INT IDENTITY(1,1) PRIMARY KEY,
     nombre NVARCHAR(100) NOT NULL,
-    precio_unitario DECIMAL(10,2) NOT NULL,
-    activo bit NOT NULL
+    precio_unitario DECIMAL(10,2) NOT NULL
     
 );
 
@@ -50,14 +49,14 @@ INSERT INTO FormaPago (nombre) VALUES ('MercadoPago');
 INSERT INTO FormaPago (nombre) VALUES ('PayPal');
 INSERT INTO FormaPago (nombre) VALUES ('Criptomoneda');
 
-INSERT INTO Articulo (nombre, precio_unitario, activo) VALUES ('Mouse Inalámbrico', 2500.00, 1);
-INSERT INTO Articulo (nombre, precio_unitario, activo) VALUES ('Teclado Mecánico', 15000.00, 1);
-INSERT INTO Articulo (nombre, precio_unitario, activo) VALUES ('Monitor 24 pulgadas', 80000.00, 1);
-INSERT INTO Articulo (nombre, precio_unitario, activo) VALUES ('Notebook Lenovo i5', 350000.00, 1);
-INSERT INTO Articulo (nombre, precio_unitario, activo) VALUES ('Disco SSD 1TB', 60000.00, 1);
-INSERT INTO Articulo (nombre, precio_unitario, activo) VALUES ('Impresora HP', 90000.00, 1);
-INSERT INTO Articulo (nombre, precio_unitario, activo) VALUES ('Auriculares Bluetooth', 12000.00, 1);
-INSERT INTO Articulo (nombre, precio_unitario, activo) VALUES ('Silla Gamer', 70000.00, 1);
+INSERT INTO Articulo (nombre, precio_unitario) VALUES ('Mouse Inalámbrico', 2500.00);
+INSERT INTO Articulo (nombre, precio_unitario) VALUES ('Teclado Mecánico', 15000.00);
+INSERT INTO Articulo (nombre, precio_unitario) VALUES ('Monitor 24 pulgadas', 80000.00);
+INSERT INTO Articulo (nombre, precio_unitario) VALUES ('Notebook Lenovo i5', 350000.00);
+INSERT INTO Articulo (nombre, precio_unitario) VALUES ('Disco SSD 1TB', 60000.00);
+INSERT INTO Articulo (nombre, precio_unitario) VALUES ('Impresora HP', 90000.00);
+INSERT INTO Articulo (nombre, precio_unitario) VALUES ('Auriculares Bluetooth', 12000.00);
+INSERT INTO Articulo (nombre, precio_unitario) VALUES ('Silla Gamer', 70000.00);
 
 INSERT INTO Factura (nro_factura, fecha, id_forma_pago, cliente) VALUES (1001, '2025-01-05', 1, 'Juan Pérez');
 INSERT INTO Factura (nro_factura, fecha, id_forma_pago, cliente) VALUES (1002, '2025-01-07', 2, 'María López');
@@ -101,22 +100,22 @@ INSERT INTO DetalleFactura (id_factura, id_articulo, cantidad) VALUES (7, 5, 3);
 INSERT INTO DetalleFactura (id_factura, id_articulo, cantidad) VALUES (8, 6, 1); -- 1 Impresora
 INSERT INTO DetalleFactura (id_factura, id_articulo, cantidad) VALUES (8, 8, 2); -- 2 Sillas Gamer
 
--- Stored Procedures
+---------------- Stored Procedures
 CREATE PROCEDURE SelectAllFacturas
 AS
 BEGIN
     SELECT F.*, FP.nombre FROM Factura F JOIN FormaPago FP ON F.id_forma_pago = FP.id_forma_pago
 END;
 GO
-
-CREATE PROCEDURE SelectAllFacturasById
+--
+CREATE PROCEDURE SelectFacturaById
     @IdFactura int
 AS
 BEGIN
     SELECT * FROM Factura F WHERE id_factura = @IdFactura
 END;
 GO
-
+--
 CREATE PROCEDURE CreateNewFactura
     @NroFactura int,
     @Fecha datetime, 
@@ -127,29 +126,112 @@ BEGIN
     INSERT INTO Factura (nro_factura, fecha, id_forma_pago, cliente) VALUES (@NroFactura, @Fecha, @IdFormaPago, @Cliente);
 END;
 GO
-
-
-
-CREATE PROCEDURE SelectAllActiculos
+--
+CREATE PROCEDURE UpdateFactura
+    @IdFactura int,
+    @NroFactura int,
+    @Fecha datetime, 
+    @IdFormaPago int, 
+    @Cliente NVARCHAR(100)
 AS
 BEGIN
-    SELECT * FROM Acticulo
+    UPDATE Factura SET nro_factura = @NroFactura, fecha = @Fecha, id_forma_pago = @IdFormaPago, cliente = @Cliente WHERE id_factura = @IdFactura;
+END;
+GO
+--
+CREATE PROCEDURE DeleteFacturaById
+    @IdFactura int
+AS
+BEGIN
+    DELETE FROM Factura WHERE id_factura = @IdFactura
 END;
 GO
 
-CREATE PROCEDURE SelectAllDetallesFactura
+-----------------------------------------------------------------------
+
+CREATE PROCEDURE SelectAllDetallesFacturas
 AS
 BEGIN
     SELECT * FROM DetalleFactura
 END;
 GO
-
-CREATE PROCEDURE GetAllDetallesFacturaById
+--
+CREATE PROCEDURE GetDetallesFacturaById
     @IdFactura int
 AS
 BEGIN
     SELECT * FROM DetalleFactura D WHERE D.id_factura = @IdFactura
 END;
 GO
+--
+CREATE PROCEDURE CreateNewDetalleFactura
+    @IdFactura int,
+    @IdArticulo int, 
+    @Cantidad int
+AS
+BEGIN
+    INSERT INTO DetalleFactura (id_factura, id_articulo, cantidad) VALUES (@IdFactura, @IdArticulo, @Cantidad );
+END;
+GO
+--
+CREATE PROCEDURE UpdateDetalleFactura
+    @IdDetalleFactura int,
+    @IdFactura int,
+    @IdArticulo int, 
+    @Cantidad int
+AS
+BEGIN
+    UPDATE DetalleFactura SET id_factura = @IdFactura, id_articulo = @IdArticulo, cantidad = @Cantidad WHERE id_detalle_factura = @IdDetalleFactura;
+END;
+GO
+--
+CREATE PROCEDURE DeleteDetalleFacturaById
+    @IdDetalleFactura int
+AS
+BEGIN
+    DELETE FROM DetalleFactura WHERE id_detalle_factura = @IdDetalleFactura;
+END;
+GO
+------------------------------------------
 
-EXEC GetAllDetallesFacturaById @IdFactura=1
+CREATE PROCEDURE SelectAllArticulos
+AS
+BEGIN
+    SELECT * FROM Articulo
+END;
+GO
+--
+CREATE PROCEDURE SelectArticuloById
+    @IdArticulo int
+AS
+BEGIN
+    SELECT * FROM Articulo WHERE id_articulo = @IdArticulo
+END;
+GO
+--
+CREATE PROCEDURE CreateNewArticulo
+    @Nombre NVARCHAR(100), 
+    @PrecioUnitario int
+AS
+BEGIN
+    INSERT INTO Articulo (nombre, precio_unitario) VALUES (@Nombre, @PrecioUnitario);
+END;
+GO
+--
+CREATE PROCEDURE UpdateArticulo
+    @IdArticulo int,
+    @Nombre NVARCHAR(100), 
+    @PrecioUnitario int
+AS
+BEGIN
+    UPDATE Articulo SET nombre = @Nombre, precio_unitario = @PrecioUnitario WHERE id_articulo = @IdArticulo;
+END;
+GO
+--
+CREATE PROCEDURE DeleteArticuloById
+    @IdArticulo int
+AS
+BEGIN
+    DELETE FROM Articulo WHERE id_articulo = @IdArticulo;
+END;
+GO
